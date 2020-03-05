@@ -1,17 +1,3 @@
-"""
-@author: Dimitar Argirov -- dimitar.argirov@nl.abnamro.com
-
-reviewer: 
-version: 0.1
-
-SUMMARY: 
-
-TODO:
-1.
-
-ISSUES:
-1.
-"""
 import pandas as pd
 
 # load all data
