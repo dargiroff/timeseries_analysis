@@ -6,8 +6,10 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 from keras import models as km
 from keras import layers as kl
+from keras.utils import plot_model
 
 from matplotlib import pyplot as plt
+
 plt.style.use('bmh')
 params = {'legend.fontsize': 20,
           'figure.figsize': (20, 10),
@@ -18,10 +20,9 @@ params = {'legend.fontsize': 20,
           'lines.linewidth': 4,
           'lines.markersize': 10}
 
-path_data = r"\\solon.prd\files\P\Global\Users\C64059\UserData\Downloads\household_power_consumption" \
-            r"\household_power_consumption.txt"
+path_data = r"/Users/dimitar/IdeaProjects/timeseries_analysis/data/household_power_consumption.txt"
 dataset = pd.read_csv(path_data, sep=';', header=0, low_memory=False, infer_datetime_format=True,
-                   parse_dates={'datetime':[0,1]}, index_col=['datetime'])
+                      parse_dates={'datetime': [0, 1]}, index_col=['datetime'])
 
 # Correctly label missings
 dataset.replace('?', np.nan, inplace=True)
@@ -44,6 +45,7 @@ dataset['sub_metering_4'] = (dataset["global_active_power"] * 1000 / 60) - (data
 # Resample the data on a daily basis
 daily_data = dataset.resample('D').sum()
 
+
 # CHECK THIS FUNCTION AND OPTIMIZE IT
 # evaluate one or more weekly forecasts against expected values
 def evaluate_forecasts(actual, predicted):
@@ -60,7 +62,7 @@ def evaluate_forecasts(actual, predicted):
     s = 0
     for row in range(actual.shape[0]):
         for col in range(actual.shape[1]):
-            s += (actual[row, col] - predicted[row, col])**2
+            s += (actual[row, col] - predicted[row, col]) ** 2
     score = np.sqrt(s / (actual.shape[0] * actual.shape[1]))
     return score, scores
 
@@ -76,8 +78,8 @@ def split_dataset(data):
     # Standard full weeks starting on Sunday and ending on Saturday are created
     x, y = data[1:-328], data[-328:-6]
     # restructure into windows of weekly data
-    x = np.array(np.split(x, len(x)/7))
-    y = np.array(np.split(y, len(y)/7))
+    x = np.array(np.split(x, len(x) / 7))
+    y = np.array(np.split(y, len(y) / 7))
     return x, y
 
 
@@ -179,6 +181,7 @@ def evaluate_model(train, test, n_input):
     predictions = np.array(predictions)
     score, scores = evaluate_forecasts(test[:, :, 0], predictions)
     return score, scores
+
 
 # split into train and test
 train, test = split_dataset(daily_data.values)
