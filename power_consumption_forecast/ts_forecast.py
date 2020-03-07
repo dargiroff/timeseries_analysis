@@ -6,7 +6,6 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 from keras import models as km
 from keras import layers as kl
-from keras.utils import plot_model
 
 from matplotlib import pyplot as plt
 
@@ -31,6 +30,8 @@ dataset.replace('?', np.nan, inplace=True)
 dataset = dataset.astype('float32')
 
 # Filling the missing values with the preceding value
+# A more elaborate filling of missings could be implemented
+# Alternatively missings could by the neural network via the use of a mask
 dataset.fillna(method='ffill', inplace=True)
 
 # Convert the dataframe columns to lowercase
@@ -46,19 +47,23 @@ dataset['sub_metering_4'] = (dataset["global_active_power"] * 1000 / 60) - (data
 daily_data = dataset.resample('D').sum()
 
 
-# CHECK THIS FUNCTION AND OPTIMIZE IT
-# evaluate one or more weekly forecasts against expected values
+# Evaluate one or more weekly forecasts against expected values
 def evaluate_forecasts(actual, predicted):
+    """
+    Evaluate the forecast made in terms of RMSE in the same unit as the values (kW)
+    :param actual: ndarray
+        The actual values
+    :param predicted: ndarray
+        The predicted values
+    :return: score, scores: float, np.array of floats
+        The overall RMSE and the RMSEs per day of the week
+    """
     scores = list()
     # calculate an RMSE score for each day
     for i in range(actual.shape[1]):
-        # calculate mse
         mse = mean_squared_error(actual[:, i], predicted[:, i])
-        # calculate rmse
         rmse = np.sqrt(mse)
-        # store
         scores.append(rmse)
-    # calculate overall RMSE
     s = 0
     for row in range(actual.shape[0]):
         for col in range(actual.shape[1]):
@@ -77,7 +82,7 @@ def split_dataset(data):
     """
     # Standard full weeks starting on Sunday and ending on Saturday are created
     x, y = data[1:-328], data[-328:-6]
-    # restructure into windows of weekly data
+    # Restructure into windows of weekly data
     x = np.array(np.split(x, len(x) / 7))
     y = np.array(np.split(y, len(y) / 7))
     return x, y
@@ -94,23 +99,26 @@ def summarize_scores(name, score, scores):
         The daily scores
     :return:
     """
-    s_scores = ', '.join(['%.1f' % s for s in scores])
-    print('%s: [%.3f] %s' % (name, score, s_scores))
+    s_scores = ', '.join(['%.3f' % s for s in scores])
+    print('\nSummary of the scores for the %s model:\n' % name)
+    print('Overall RMSE score: %.3f' % score)
+    print('Daily RMSE scores (Sun-Mon):', s_scores)
 
 
 def to_supervised(train, n_input, n_out=7):
     """
-
+    Transform the data to be used on the model training and testing
     :param train: np.array
         The train set
     :param n_input: int
-
+        The length of the series used as input. Seven for weekly data.
     :param n_out:
-    :return:
+        The length of the output series. Seven for weekly data.
+    :return: X, y: a tuple of numpy arrays
     """
     # flatten data
     data = train.reshape((train.shape[0] * train.shape[1], train.shape[2]))
-    X, y = list(), list()
+    x, y = list(), list()
     in_start = 0
     # step over the entire history one time step at a time
     for _ in range(len(data)):
@@ -121,21 +129,33 @@ def to_supervised(train, n_input, n_out=7):
         if out_end <= len(data):
             x_input = data[in_start:in_end, 0]
             x_input = x_input.reshape((len(x_input), 1))
-            X.append(x_input)
+            x.append(x_input)
             y.append(data[in_end:out_end, 0])
         # move along one time step
         in_start += 1
-    return np.array(X), np.array(y)
+    return np.array(x), np.array(y)
 
 
-# train the model
 def build_model(train, n_input):
-    # prepare data
+    """
+    Build the actual model using the prepared data.
+    The model is a sequential neural network using LSTM for an auto-regressive solution and a second
+    hidden layer, as well as a final output layer.
+    Optimization is achieved through stochastic gradual descent with adaptive learning rate (adam)
+    A rectifier is used as an activation function.
+
+    :param train: ndarray
+        The train set.
+    :param n_input: int
+        The length of the series used as input. Seven for weekly data.
+    :return:
+    """
+    # prepare the data
     train_x, train_y = to_supervised(train, n_input)
-    # define parameters
+    # define the parameters
     verbose, epochs, batch_size = 0, 70, 16
     n_timesteps, n_features, n_outputs = train_x.shape[1], train_x.shape[2], train_y.shape[1]
-    # define model
+    # define the model
     model = km.Sequential()
     model.add(kl.LSTM(200, activation='relu', input_shape=(n_timesteps, n_features)))
     model.add(kl.Dense(100, activation='relu'))
@@ -146,8 +166,16 @@ def build_model(train, n_input):
     return model
 
 
-# make a forecast
 def forecast(model, history, n_input):
+    """
+    Make a forecast based on the neural network
+    :param model: keras sequential model object as built in build_model()
+    :param history: a list of numpy arrays
+        The historical data, on which a forecast will be made.
+    :param n_input: int
+        The length of the series used as input. Seven for weekly data.
+    :return:
+    """
     # flatten data
     data = np.array(history)
     data = data.reshape((data.shape[0] * data.shape[1], data.shape[2]))
@@ -162,8 +190,19 @@ def forecast(model, history, n_input):
     return yhat
 
 
-# evaluate a single model
 def evaluate_model(train, test, n_input):
+    """
+    Evaluates the performance of the model
+    :param train: pandas dataframe
+        The train set
+    :param test: pandas dataframe
+        The test dataset
+    :param n_input: int
+        The number of observations to be evaluated. Seven for weekly data.
+    :return: score, scores, predictions: float, ndarray, ndarray
+        The average overall score, the average daily scores for each day in the week, the daily predictions
+        for each day in the predicted weeks
+    """
     # fit model
     model = build_model(train, n_input)
     # history is a list of weekly data
@@ -180,25 +219,44 @@ def evaluate_model(train, test, n_input):
     # evaluate predictions days for each week
     predictions = np.array(predictions)
     score, scores = evaluate_forecasts(test[:, :, 0], predictions)
-    return score, scores
+    return score, scores, predictions
 
 
-# split into train and test
+# Split the data into train and test
 train, test = split_dataset(daily_data.values)
-# evaluate model and get scores
+
+# Evaluate the model, compute performance scores, calculate prediction and actual averages per day
+# of the week
 n_input = 7
-score, scores = evaluate_model(train, test, n_input)
-# summarize scores
-summarize_scores('lstm', score, scores)
-# plot scores
+score, scores, predictions = evaluate_model(train, test, n_input)
+avg_pred_per_day = test[:, :, 0].mean(axis=0)
+avg_predictions_per_day = predictions.mean(axis=0)
+
+# Summarize the performance scores
+summarize_scores('LTSM neural network', score, scores)
+
+# Plot the RMSE
 days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 fig, ax = plt.subplots()
-ax.plot(scores, marker='o', linestyle="--", label='RMSE per day in kW')
+ax.plot(scores, marker='o', linestyle='--', label='RMSE per day in kW')
 ax.set_facecolor('white')
-ax.set_xlabel("Day", size=15)
-ax.set_ylabel("RMSE", size=15)
+ax.set_xlabel('Day', size=15)
+ax.set_ylabel('RMSE', size=15)
 ax.set_xticks(np.arange(0, 7))
 ax.set_xticklabels(days, rotation=-45)
-fig.legend(loc="upper left")
+fig.legend(loc='upper left', bbox_to_anchor=(0.11, 0.98))
 ax.tick_params(axis='both', labelsize=12)
+plt.show()
+
+# Plot average daily values based on the predictions and the test sample
+fig1, ax1 = plt.subplots()
+ax1.plot(avg_pred_per_day, marker='o', linestyle="--", label='Actual')
+ax1.plot(avg_predictions_per_day, marker='o', linestyle="--", label='Prediction')
+ax1.set_facecolor('white')
+ax1.set_xlabel('Day', size=15)
+ax1.set_ylabel('Daily Average Values in kW', size=15)
+ax1.set_xticks(np.arange(0, 7))
+ax1.set_xticklabels(days, rotation=-45)
+fig1.legend(loc='upper right', bbox_to_anchor=(0.85, 0.99))
+ax1.tick_params(axis='both', labelsize=12)
 plt.show()
