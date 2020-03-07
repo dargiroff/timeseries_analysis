@@ -5,3 +5,5 @@ I have tried to forecast power consumption for one week based on a popular [data
 This has resulted in a reasonalby accurate forecast with a relatively low RMSE. 
 
 ![RMSE per day of the week](/power_consumption_forecast/daily_error.png?raw=true)
+
+![Predicted vs Actual (averages)](/power_consumption_forecast/prediction_vs_actual_averages.png?raw=true)
