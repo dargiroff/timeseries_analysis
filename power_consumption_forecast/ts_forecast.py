@@ -246,8 +246,8 @@ ax.set_xticks(np.arange(0, 7))
 ax.set_xticklabels(days, rotation=-45)
 fig.legend(loc='upper left', bbox_to_anchor=(0.11, 0.98))
 ax.tick_params(axis='both', labelsize=12)
-plt.show()
 plt.savefig(r"/Users/dimitar/IdeaProjects/timeseries_analysis/power_consumption_forecast/daily_error.png")
+plt.show()
 
 # Plot average daily values based on the predictions and the test sample
 fig1, ax1 = plt.subplots()
@@ -260,6 +260,6 @@ ax1.set_xticks(np.arange(0, 7))
 ax1.set_xticklabels(days, rotation=-45)
 fig1.legend(loc='upper right', bbox_to_anchor=(0.85, 0.99))
 ax1.tick_params(axis='both', labelsize=12)
-plt.show()
 plt.savefig(r"/Users/dimitar/IdeaProjects/timeseries_analysis"
             r"/power_consumption_forecast/prediction_vs_actual_averages.png")
+plt.show()
