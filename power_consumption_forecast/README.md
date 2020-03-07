@@ -1,5 +1,5 @@
-# Product Name
-> Short blurb about what your product does.
+# Power Consumption Forecast via LSTM Neural Network
+> Predict power consumption based on past data using a LSTM sequentila neural net
 
 [![NPM Version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
