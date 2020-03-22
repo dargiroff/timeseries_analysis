@@ -5,12 +5,20 @@ import torch
 from sklearn.preprocessing import MinMaxScaler
 from torch import nn
 
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+
 plt.style.use('bmh')
 plt.rcParams.update({"axes.facecolor": "white"})
 
 RANDOM_SEED = 42
 np.random.seed(RANDOM_SEED)
 torch.manual_seed(RANDOM_SEED)
+
+
+# url = r'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/' \
+#       r'csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
+# df = pd.read_csv(url)
 
 df = pd.read_csv(r'/Users/dimitar/IdeaProjects/timeseries_analysis/data/time_series_19-covid-Confirmed.csv')
 df = df.iloc[:, 4:]
@@ -202,13 +210,6 @@ plt.show()
 
 fig4, ax4 = plt.subplots()
 ax4.plot(daily_cases.index[len(train_data):len(train_data) + len(true_cases)], true_cases, label='Real Daily Cases')
-ax4.set_xlabel('Date')
-ax4.set_ylabel('Daily Cases')
-plt.xticks(rotation=-45)
-fig4.legend()
-plt.show()
-
-fig4, ax4 = plt.subplots()
 ax4.plot(daily_cases.index[len(train_data):len(train_data) + len(true_cases)], predicted_cases,
          label='Predicted Daily Cases')
 ax4.set_xlabel('Date')
