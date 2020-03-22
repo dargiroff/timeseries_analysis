@@ -117,26 +117,26 @@ def select_params(train_data, test_data, grid):
 def plot_forecast(train, pred, test=None):
     fig, (ax_scalar, ax_log) = plt.subplots(2, 1, sharex='all')
 
-    ax_log.set_yscale('log')
-    ax_log.plot(train.index, train, label='Train')
-    ax_log.plot(pred.index, pred, label='Prediction', color='orange')
-    ax_log.set_ylabel('log of Cases')
-
     ax_scalar.plot(train.index, train, label='Train')
+    if test is not None:
+        ax_scalar.plot(test.index, test, label='Test', color='green')
     ax_scalar.plot(pred.index, pred, label='Prediction', color='orange')
     ax_scalar.set_ylabel('Cases')
     ax_scalar.set_xlabel('Date')
 
+    ax_log.set_yscale('log')
+    ax_log.plot(train.index, train, label='Train')
     if test is not None:
-        ax_scalar.plot(test.index, test, label='Test', color='green')
         ax_log.plot(test.index, test, label='Test', color='green')
+    ax_log.plot(pred.index, pred, label='Prediction', color='orange')
+    ax_log.set_ylabel('log of Cases')
 
     for ax in fig.axes:
         plt.sca(ax)
         plt.xticks(rotation=-45)
-    handles, labels = ax_scalar.get_legend_handles_labels()
-    ax_scalar.legend(handles=handles, labels=labels, loc='upper center',
-                     bbox_to_anchor=(0.5, -0.7), fancybox=False, shadow=False, ncol=3)
+    handles, labels = ax_log.get_legend_handles_labels()
+    ax_log.legend(handles=handles, labels=labels, loc='upper center',
+                  bbox_to_anchor=(0.5, -0.7), fancybox=False, shadow=False, ncol=3)
 
     plt.suptitle('Daily Covid-19 cases prediction')
     fig.tight_layout()
