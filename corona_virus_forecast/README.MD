@@ -22,7 +22,7 @@ The growth of confirmed covid-19 cases per country (with the countries of intere
 
 <br>
 
-For the forecast of the daily covid19 cases, I have used [Holt-Winter's exponential smoothing technique](https://otexts.com/fpp2/holt-winters.html)
+For the forecast of the daily covid19 cases, I have used [Holt-Winter's exponential smoothing technique](https://otexts.com/fpp2/holt-winters.html). <br>
 Via a grid search, I have found the best hyperparams for the exponential smoothing and have backtest the forecast on
 a training set that constitutes 33% of the available data.
 After the backtest I have used all available data to make a prediction in the future.
