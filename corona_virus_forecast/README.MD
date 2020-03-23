@@ -16,7 +16,7 @@ Japan, Hong Kong, and South Korea, the growth has been reduced by the use of a s
 mass testing, social distancing, and tracking of potential virus carriers, among others.
 
 <br>
-The growth of confirmed covid-19 cases per country, after the 100th case (the plotter series are log-transformed):
+The growth of confirmed covid-19 cases per country (with the countries of interest being color-highlighted), after the 100th case. The plotted series are log-transformed:
 
 ![Covid19_growth_analysis](https://github.com/dargiroff/timeseries_analysis/blob/master/corona_virus_forecast/covid19_analysis.png)
 
