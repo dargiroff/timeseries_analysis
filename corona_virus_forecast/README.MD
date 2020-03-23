@@ -11,7 +11,7 @@ For the analysis of the growth I have graphed the cumulative cases per country, 
 respective country. I have highlighted some countries of interest and have compared their growth paths with the 33% growth
 rate. The resulting figure gives interesting insight about the development of the pandemic. Namely, in many western 
 countries the growth of the confirmed cases has been comparable to a daily growth of 33%, which could be interpreted as
-a sign that many other countries might soon be facing the challenges if Italy. However, in countries such as Singapore,
+a sign that many other countries might soon be facing the challenges оf Italy. However, in countries such as Singapore,
 Japan, Hong Kong, and South Korea, the growth has been reduced by the use of a set of rapid and strict measures, such as
 mass testing, social distancing, and tracking of potential virus carriers, among others.
 
