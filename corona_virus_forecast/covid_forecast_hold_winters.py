@@ -122,7 +122,7 @@ def plot_forecast(train, pred, test=None):
         ax_scalar.plot(test.index, test, label='Test', color='green')
     ax_scalar.plot(pred.index, pred, label='Prediction', color='orange')
     ax_scalar.set_ylabel('Cases')
-    ax_scalar.set_xlabel('Date')
+
 
     ax_log.set_yscale('log')
     ax_log.plot(train.index, train, label='Train')
@@ -130,6 +130,7 @@ def plot_forecast(train, pred, test=None):
         ax_log.plot(test.index, test, label='Test', color='green')
     ax_log.plot(pred.index, pred, label='Prediction', color='orange')
     ax_log.set_ylabel('log of Cases')
+    ax_log.set_xlabel('Date')
 
     for ax in fig.axes:
         plt.sca(ax)
